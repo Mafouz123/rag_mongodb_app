@@ -68,4 +68,5 @@ def query_data(query):
 
     return answer
 
-print(query_data("Quelle est le résumé de ce document?"))
+if __name__ == "__main__":
+    print(query_data("Quelle est le résumé de ce document?"))
