@@ -15,6 +15,7 @@ Le fonctionnement est le suivant :
 Installez les outils suivants :
 
 - Python 3.10 ou une version plus récente ;
+- [Streamlit](https://streamlit.io/) pour l'interface utilisateur ;
 - un compte [MongoDB Atlas](https://www.mongodb.com/atlas) ;
 - une clé API [Groq](https://console.groq.com/keys) ;
 - une clé API [Voyage AI](https://dash.voyageai.com/api-keys).
@@ -143,7 +144,7 @@ python load_data.py
 
 Cette commande crée la base `book_mongodb_chunks` et la collection `chunked_data`, puis enregistre les morceaux vectorisés. Elle utilise Groq et Voyage AI, donc des appels API peuvent être facturés selon vos comptes.
 
-## 8. Poser une question
+## 8. Tester la recherche en ligne de commande
 
 Après avoir créé l'index `vector_index` et attendu son statut **Active**, lancez :
 
@@ -163,7 +164,43 @@ Pour poser une autre question, modifiez la dernière ligne de `rag.py` :
 print(query_data("Votre question sur le document"))
 ```
 
-## 9. Résoudre les problèmes courants
+## 9. Tester l'application avec l'interface utilisateur
+
+Le fichier `app.py` fournit une interface web Streamlit. Elle permet de poser des questions dans une conversation et d'afficher les réponses générées à partir du document indexé.
+
+Les variables d'environnement doivent être configurées dans le même terminal PowerShell que celui utilisé pour lancer Streamlit :
+
+```powershell
+$env:MONGODB_URI = "mongodb+srv://<utilisateur>:<mot_de_passe>@<cluster>.mongodb.net/?retryWrites=true&w=majority"
+$env:VOYAGE_API_KEY = "votre_cle_voyage_ai"
+$env:GROQ_API_KEY = "votre_cle_groq"
+```
+
+Vérifiez la présence des variables sans afficher leur contenu :
+
+```powershell
+@("MONGODB_URI", "VOYAGE_API_KEY", "GROQ_API_KEY") | ForEach-Object {
+	"{0}: {1}" -f $_, [bool](Get-Item "Env:$_" -ErrorAction SilentlyContinue)
+}
+```
+
+Les trois variables doivent afficher `True`. Lancez ensuite l'interface depuis la racine du projet :
+
+```powershell
+streamlit run app.py
+```
+
+Ouvrez l'adresse affichée par Streamlit, généralement :
+
+```text
+http://localhost:8501
+```
+
+Posez une question dans le champ de discussion. L'application recherche les passages pertinents dans MongoDB Atlas et demande à Groq de générer une réponse basée sur le docu♦men♦t.
+♦
+Avant ce test, vérifiez que l'index `vector_index` est créé et que son statut est **Active**. Pour arrêter l'application, revenez dans le terminal et appuyez sur `Ctrl+C`.
+
+## 10. Résoudre les problèmes courants
 
 ### `ModuleNotFoundError`
 
@@ -195,6 +232,7 @@ rag_mongodb_app/
 ├── key_param.py          # Lecture des variables d'environnement
 ├── load_data.py          # Chargement et vectorisation du PDF
 ├── rag.py                # Recherche et génération de réponse
+├── app.py                # Interface utilisateur Streamlit
 ├── requirements.txt      # Dépendances Python
 └── README.md
 ```
